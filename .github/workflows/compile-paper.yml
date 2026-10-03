@@ -1,0 +1,34 @@
+name: Compile paper
+
+on:
+  push:
+    paths:
+      - paper.tex
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: paper.tex
+
+      - name: Commit compiled PDF and checksums
+        shell: bash
+        run: |
+          sha256sum paper.pdf paper.tex > SHA256SUMS.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add paper.pdf SHA256SUMS.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Build paper PDF"
+            git push
+          fi
