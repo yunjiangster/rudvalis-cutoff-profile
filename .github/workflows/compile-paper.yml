@@ -41,5 +41,6 @@ jobs:
           git add paper.tex paper.pdf SHA256SUMS.txt
           if ! git diff --cached --quiet; then
             git commit -m "Add paper source and compiled PDF"
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
