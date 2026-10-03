@@ -1,0 +1,197 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs,tabularx,array,enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+\hypersetup{
+  pdftitle={Cutoff and a Gaussian-shift profile for the Rudvalis shuffle},
+  pdfauthor={Yunjiang Jiang},
+  pdfsubject={Rudvalis shuffle, mixing time, cutoff, Gaussian profile, interchange process}
+}
+\setlength{\emergencystretch}{2em}
+\setlist[itemize]{topsep=3pt,itemsep=2pt,parsep=0pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Pp}{\mathbb P}
+\newcommand{\C}{\mathbb C}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Sn}{\mathfrak S_n}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\HS}{\operatorname{HS}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\erf}{\operatorname{erf}}
+\newcommand{\id}{\mathrm{id}}
+\newcommand{\ind}{\mathbf 1}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\ip}[2]{\left\langle #1,#2\right\rangle}
+\newcommand{\floor}[1]{\left\lfloor #1\right\rfloor}
+\newcommand{\ceil}[1]{\left\lceil #1\right\rceil}
+\newcommand{\ee}{\mathrm e}
+\newcommand{\cH}{\mathcal H}
+\newcommand{\cL}{\mathcal L}
+\newcommand{\cE}{\mathcal E}
+\newcommand{\cF}{\mathcal F}
+
+\title{Cutoff and a Gaussian-shift profile for the Rudvalis shuffle}
+\author{Yunjiang Jiang}
+\date{October 3, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The Rudvalis shuffle removes the top card and reinserts it uniformly at random in one of the bottom two positions.  Hildebrand proved the classical upper bound $O(n^3\log n)$, and Wilson later proved the sharp lower coefficient $1/(8\pi^2)$, establishing the correct order but leaving the leading upper constant, cutoff, and the cutoff profile open.  We prove that the full labelled shuffle has total-variation cutoff at
+\[
+  \frac{n^3\log n}{8\pi^2}
+\]
+with a window of order $n^3$.  More precisely, for every fixed $s\in\R$,
+\[
+ d_n\!\left(\floor{\frac{n^3}{8\pi^2}(\log n+2s)}\right)
+ \longrightarrow
+ \erf\!\left(\frac{\ee^{-s}}2\right),
+\]
+and at the same times the chi-square divergence converges to
+$\exp(2\ee^{-2s})-1$.
+
+The upper bound is obtained by writing one deterministic rotation of the shuffle as a nonnormal sweep of adjacent averaging projections, comparing that sweep to a weighted interchange generator, and controlling the entire regular-representation heat trace.  The key sharp-window ingredients are heat-kernel smoothing through the Octopus Inequality, zero extension of deletion-harmonic ordered-tuple functions, a representation-theoretic multiplicity payment, and a sectorwise entrance estimate that disposes of all large Young-diagram deficits.  For the profile, an exact complex one-card eigenfunction yields a deck statistic whose surviving first Fourier mode converges to a Gaussian shift.  A matching full-deck $L^2$ bound then shows that this one-dimensional Gaussian likelihood ratio asymptotically exhausts all remaining information, giving the exact total-variation profile.
+\end{abstract}
+
+\noindent\textbf{Keywords.} Rudvalis shuffle; card shuffling; mixing time; cutoff; cutoff profile; interchange process; symmetric group; Octopus Inequality; Gaussian shift.
+
+\medskip
+\noindent\textbf{2020 Mathematics Subject Classification.} Primary 60J10; secondary 60C05, 20C30.
+
+\tableofcontents
+\newpage
+
+\section{Introduction and historical context}\label{sec:intro}
+
+\subsection{The shuffle and the long-standing sharp-constant problem}
+The Rudvalis shuffle is one of the simplest examples of a card shuffle whose global mixing is much slower than the visible motion of a single step might suggest.  From a deck of $n$ labelled cards, remove the top card and place it either at the bottom or immediately above the bottom card, each with probability $1/2$.  The model was proposed by Arunas Rudvalis and was recorded in Diaconis's monograph on group representations and probability~\cite{Diaconis1988}.  We number positions from top to bottom.
+
+The early quantitative theory was developed by Hildebrand, whose thesis established an $O(n^3\log n)$ total-variation upper bound~\cite{Hildebrand1990}.  Diaconis and Saloff-Coste subsequently developed comparison methods for random walks on finite groups and studied closely related symmetric variants of the Rudvalis dynamics~\cite{DSC1993,DSC1995}.  Wilson's 2003 paper supplied the decisive lower-bound advance: for every fixed $\varepsilon>0$, at time
+\[
+  \frac{1-o(1)}{8\pi^2}n^3\log n
+\]
+the original Rudvalis shuffle remains at total-variation distance at least $1-\varepsilon$ from uniform~\cite[Theorem~1]{Wilson2003}.  Thus the order $\Theta(n^3\log n)$ was known, but the upper and lower leading constants did not match.  Wilson's method also clarified why the problem is delicate: the relevant one-card mode is complex and its phase rotates quickly, while its modulus decays only on the much longer scale $n^3$~\cite{Wilson2003}.  Jonasson later gave a streamlined route to the same order of lower bound using an $n$-step viewpoint~\cite{Jonasson2006}, and Goel studied the broader family of top-to-bottom-$k$ shuffles~\cite{Goel2006}.
+
+A different line of work studies hydrodynamic and fluctuation limits of particle projections of Rudvalis-type shuffles.  Gon\c{c}alves, Jara, Marinho and Moreira obtained such scaling limits and, in their 2023 paper, explicitly noted that matching mixing-time bounds for the original Rudvalis shuffle were still unknown~\cite{GoncalvesEtAl2023}.  Their work also emphasizes a useful conceptual separation: diffusive or hydrodynamic information about a fixed projection does not by itself control the full labelled permutation.
+
+The present argument closes the sharp upper-bound gap and goes further to identify the cutoff window and profile.  A recent ingredient is the use of the Octopus Inequality of Caputo, Liggett and Richthammer~\cite{CLR}, in a heat-kernel smoothing comparison of the type that also appears in recent work of Hermon, Kozma and Salez on the exclusion process~\cite{HKS}.  We use only the comparison inequality derived from the Octopus Inequality; no exclusion-process cutoff theorem is imported into the Rudvalis shuffle.
+
+\subsection{Main result}
+Let $\pi_n$ be the uniform probability measure on $\Sn$, let $\mu_t$ be the law of the deck after $t$ elementary Rudvalis moves from a deterministic initial deck, and define
+\[
+ d_n(t)=\norm{\mu_t-\pi_n}_{\TV}.
+\]
+Because the shuffle is a random walk on the group $\Sn$, translation of the initial deck merely translates the law, and $d_n(t)$ does not depend on the deterministic starting permutation.
+
+For probability measures $\mu\ll\pi_n$, define the chi-square divergence
+\[
+ \chi^2(\mu,\pi_n)
+ =\E_{\pi_n}\!\left[\left(\frac{d\mu}{d\pi_n}-1\right)^2\right].
+\]
+We abbreviate $\chi_n^2(t)=\chi^2(\mu_t,\pi_n)$.
+
+\begin{theorem}[Cutoff profile]\label{thm:mainprofile}
+For each fixed $s\in\R$, put
+\[
+ t_n(s)=\floor{\frac{n^3}{8\pi^2}(\log n+2s)}.
+\]
+Then
+\begin{align}
+ d_n(t_n(s))&\longrightarrow
+  2\Phi\!\left(\frac{\ee^{-s}}{\sqrt2}\right)-1
+  =\erf\!\left(\frac{\ee^{-s}}2\right),\label{eq:main-tv}\\
+ \chi_n^2(t_n(s))&\longrightarrow
+  \exp(2\ee^{-2s})-1.\label{eq:main-chi}
+\end{align}
+Here $\Phi$ is the standard normal distribution function and
+$\erf(x)=\frac2{\sqrt\pi}\int_0^x e^{-u^2}\,du$.
+\end{theorem}
+
+The profile is best understood as a \emph{Gaussian-shift profile}.  The total-variation profile itself is not a Gaussian density.  At the cutoff window, one real Fourier statistic has limiting law $N(0,1)$ under stationarity and $N(\sqrt2\ee^{-s},1)$ under the shuffled deck.  The total-variation distance between those two normal laws is exactly the right side of~\eqref{eq:main-tv}.
+
+\begin{corollary}[Sharp mixing time and window]\label{cor:mixing}
+For every fixed $\varepsilon\in(0,1)$,
+\[
+ t_{\mathrm{mix}}(\varepsilon)
+ =\frac{n^3\log n}{8\pi^2}
+ -\frac{n^3}{4\pi^2}
+   \log\!\left(2\erf^{-1}(\varepsilon)\right)
+ +o(n^3).
+\]
+In particular,
+\[
+ t_{\mathrm{mix}}(\varepsilon)
+ =\left(\frac1{8\pi^2}+o(1)\right)n^3\log n,
+\]
+and the cutoff window has order $n^3$.  With the conventional centering
+$t_n=n^3\log n/(8\pi^2)$, a natural window scale is
+$w_n=n^3/(4\pi^2)$.
+\end{corollary}
+
+\begin{proof}
+The function $F(s)=\erf(\ee^{-s}/2)$ is continuous and strictly decreasing, with $F(s)\to1$ as $s\to-\infty$ and $F(s)\to0$ as $s\to+\infty$.  Solving $F(s)=\varepsilon$ gives
+$s=-\log(2\erf^{-1}(\varepsilon))$.  Monotonicity of total-variation distance in time and \cref{thm:mainprofile} then bracket the level-$\varepsilon$ hitting time between any two nearby fixed window parameters, yielding the stated expansion.
+\end{proof}
+
+\subsection{Why the constant $1/(8\pi^2)$ appears}
+The proof makes the constant transparent.  One full turn of the deterministic rotation consists of $n$ elementary moves and becomes, in a rotating coordinate frame, a product
+\[
+ K=P_{n-1}\cdots P_0,
+ \qquad P_i=\frac{I+U_{(i,i+1)}}2,
+\]
+of adjacent averaging projections around the cycle.  We compare this nonnormal product to the positive weighted interchange operator
+\[
+ L_Q=Q^{-1}A_0+\sum_{i=1}^{n-1}A_i,
+ \qquad A_i=I-P_i.
+\]
+The endpoint comparison has the asymptotically sharp constant
+\[
+ K^*L_QK\preceq c_Q(I-K^*K),
+ \qquad c_Q=\frac{1+5/Q}{4}\longrightarrow\frac14.
+\]
+On the other hand the first nonzero one-card eigenvalue of $L_Q$ is asymptotic to $2\pi^2/n^2$.  Hence the critical \emph{static} heat-trace time is $n^2\log n/(2\pi^2)$.  Multiplication by the endpoint factor $1/4$ gives $n^2\log n/(8\pi^2)$ sweeps, and multiplying by $n$ moves per sweep gives the physical time $n^3\log n/(8\pi^2)$.
+
+\subsection{Architecture of the proof}\label{sec:overview}
+The proof separates naturally into an upper-bound problem and a profile-identification problem.  The upper-bound problem is genuinely full-deck: it must control all $n!$ configurations and all irreducible components of the regular representation.  The profile problem is finer.  Once the full-deck remainder is known to be small at the $n^3$ window scale, one must identify the residual mode, prove its Gaussian limit, and then show that no other asymptotically detectable information survives.
+
+The first simplification is geometric.  A Rudvalis move contains a deterministic cyclic displacement together with a single fair local randomization.  Observing the chain after complete rotations and passing to a rotating coordinate frame removes the deterministic drift.  One obtains the systematic adjacent-projection sweep
+\[
+ K=P_{n-1}\cdots P_0,
+ \qquad P_i=\frac{I+U_{(i,i+1)}}2.
+\]
+This operator is not self-adjoint, so its powers cannot be studied by the usual reversible spectral theorem.  The role of the weighted interchange operator
+\[
+ L_Q=Q^{-1}A_0+\sum_{i=1}^{n-1}A_i
+\]
+is precisely to supply a reversible comparison object.  A local three-site calculation relates the Dirichlet energy of the endpoint $KF$ to the norm dissipated by the projection sweep.  From this one obtains a resolvent comparison for the singular values of $K$.  This is the mechanism that transports static heat-trace estimates for $L_Q$ back to the original directed shuffle without treating $K$ as if it were reversible.
+
+The main full-deck difficulty is representation-theoretic multiplicity.  A bound for one card, or even for a fixed number of labelled cards, does not by itself control the regular representation.  We therefore group irreducible representations by the first-row deficit $r=n-\lambda_1$ of the corresponding partition.  For small and intermediate deficits, deletion-harmonic functions on ordered injective $r$-tuples contain enough copies of every relevant irreducible.  The comparison becomes effective only after smoothing the one-card kernel.  At the smoothed scale, zero extension from injective tuples to the full product incurs an explicit collision penalty of order $r^2p_*$, with $p_*$ the largest smoothed transition probability, instead of the exponentially large extension losses that arise at the original nearest-neighbor scale.  Young branching then pays the regular-representation multiplicities with the correct factorial factor.
+
+Large deficits require a different idea.  A crude spectral gap is strong enough once the effective dimension has first been reduced.  We accomplish this with a short heat-trace entrance estimate obtained by cutting the path into blocks and restricting the regular representation to the corresponding Young subgroup.  This produces a sectorwise bound that depends on the deficit $r$, rather than paying the full dimension $n!$ at the final cutoff time.  Combining the harmonic-tuple estimate for moderate $r$ with the block entrance and rough gap for large $r$ closes the entire regular heat trace.
+
+To work at the exact cutoff window, rather than at a fixed positive multiplicative slack, the weak-edge parameter $Q$ must tend slowly to infinity.  This removes the seam loss in the sweep-to-interchange comparison.  The required uniformity is supplied by a heat-kernel bound for the smoothed one-card chain that is independent of $Q$.  With a suitable choice of $Q$, smoothing scale, and deficit threshold, the full regular trace at
+\[
+ \frac{n^2}{2\pi^2}(\log n+2s)
+\]
+has the precise leading contribution coming from the two lowest one-card modes.  After transfer through the nonnormal resolvent estimate, this yields
+\[
+ \limsup_{n\to\infty}\chi_n^2(t_n(s))
+ \le \exp(2\ee^{-2s})-1.
+\]
+
+The remaining task is to identify the random variable that exhausts this $L^2$ budget.  The one-card sweep has an exact eigenvalue determin
