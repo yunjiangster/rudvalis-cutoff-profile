@@ -3,7 +3,7 @@ name: Compile paper
 on:
   push:
     paths:
-      - paper.tex
+      - BUILD_READY
   workflow_dispatch:
 
 permissions:
@@ -16,19 +16,30 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Reconstruct LaTeX source
+        shell: bash
+        run: cat source_parts/part-* > paper.tex
+
+      - name: Verify reconstructed source
+        shell: bash
+        run: |
+          test "$(wc -c < paper.tex)" -eq 62412
+          sha256sum paper.tex
+          test "$(sha256sum paper.tex | cut -d' ' -f1)" = "6b8bf10f71c8c94c89d0b2863f0d7c97f4212e968b1dfefbc31ca34afbd9097d"
+
       - name: Compile LaTeX
         uses: xu-cheng/latex-action@v3
         with:
           root_file: paper.tex
 
-      - name: Commit compiled PDF and checksums
+      - name: Commit source, compiled PDF, and checksums
         shell: bash
         run: |
           sha256sum paper.pdf paper.tex > SHA256SUMS.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add paper.pdf SHA256SUMS.txt
+          git add paper.tex paper.pdf SHA256SUMS.txt
           if ! git diff --cached --quiet; then
-            git commit -m "Build paper PDF"
+            git commit -m "Add paper source and compiled PDF"
             git push
           fi
